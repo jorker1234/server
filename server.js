@@ -50,6 +50,27 @@ export default function(opt) {
         };
     });
 
+    router.get('/api/clients', (ctx, next) => {
+        const clients = manager.getClients();
+        ctx.body = {
+            clients
+        };
+    });
+
+    router.delete('/api/clients/:id', (ctx, next) => {
+        const clientId = ctx.params.id;
+        const client = manager.getClient(clientId);
+        if (!client) {
+            ctx.throw(404);
+            return;
+        }
+
+        manager.removeClient(clientId);
+        ctx.body = {
+            removeClientId: clientId,
+        };
+    });
+
     app.use(router.routes());
     app.use(router.allowedMethods());
 
@@ -67,7 +88,8 @@ export default function(opt) {
         if (isNewClientRequest) {
             const reqId = hri.random();
             debug('making new client with id %s', reqId);
-            const info = await manager.newClient(reqId);
+            const urlPattern = `${schema}://%s.${ctx.request.host}`;
+            const info = await manager.newClient(reqId, urlPattern);
 
             const url = schema + '://' + info.id + '.' + ctx.request.host;
             info.url = url;
@@ -104,8 +126,9 @@ export default function(opt) {
             return;
         }
 
-        debug('making new client with id %s', reqId);
-        const info = await manager.newClient(reqId);
+        const urlPattern = `${schema}://%s.${ctx.request.host}`;
+        const info = await manager.newClient(reqId, urlPattern);
+        debug('making new client with id %s', info.id);
 
         const url = schema + '://' + info.id + '.' + ctx.request.host;
         info.url = url;

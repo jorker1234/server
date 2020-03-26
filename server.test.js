@@ -106,4 +106,27 @@ describe('Server', () => {
 
         await new Promise(resolve => server.close(resolve));
     });
+
+    it('should suport the /api/clients/:id endpoint', async () => {
+        const server = createServer();
+        await new Promise(resolve => server.listen(resolve));
+
+        const clientId = 'client1';
+        await request(server).get(`/${clientId}`);
+        const res = await request(server).delete(`/api/clients/${clientId}`);
+        assert.equal(res.body.removeClientId, clientId);
+    });
+
+    it('should suport the /api/clients endpoint', async () => {
+        const server = createServer();
+        await new Promise(resolve => server.listen(resolve));
+
+        const clientId1 = 'client1';
+        await request(server).get(`/${clientId1}`);
+
+        const clientId2 = 'client2';
+        await request(server).get(`/${clientId2}`);
+        const res = await request(server).get(`/api/clients`);
+        assert.equal(res.body.clients.length, 2);
+    });
 });
